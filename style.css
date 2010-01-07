@@ -1,0 +1,27 @@
+/* Basic Usage */
+
+* {
+	margin: 0;
+	padding: 0;
+	border: none; }
+	
+body {
+	font: normal 12px [font];
+	color: #000000;
+	background: #ffffff url("[img]bg.jpg") top left repeat-x; }
+	
+a {
+	color: [blue];
+	text-decoration: underline; }
+	
+h1 { color: [blue]; }
+	
+#wrapper {
+	width: 800px;
+	margin: 0 auto; }
+	
+/* Using PHP functions within CSS */
+
+.col1 { width: colWidth(5); }
+.col2 { width: colWidth(3); }
+.col3 { width: colWidth(1); }
