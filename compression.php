@@ -1,14 +1,14 @@
 <?php
 /**
-* Compression - CSS Builder, Compressor and Cacher
-*
-* Allows the use of defined variables within the CSS file; also compresses the stylesheet and caches it.
-* 
-* @author       Miles Johnson - www.milesj.me
-* @copyright    Copyright 2006-2009, Miles Johnson, Inc.
-* @license      http://www.opensource.org/licenses/mit-license.php - Licensed under The MIT License
-* @link         www.milesj.me/resources/script/compression
-*/
+ * Compression - CSS Builder, Compressor and Cacher
+ *
+ * Allows the use of defined variables within the CSS file; also compresses the stylesheet and caches it.
+ *
+ * @author       Miles Johnson - www.milesj.me
+ * @copyright    Copyright 2006-2009, Miles Johnson, Inc.
+ * @license      http://www.opensource.org/licenses/mit-license.php - Licensed under The MIT License
+ * @link         www.milesj.me/resources/script/compression
+ */
 
 class Compression {
 
