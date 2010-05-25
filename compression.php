@@ -2,7 +2,7 @@
 /**
  * Compression - CSS Builder, Compressor and Cacher
  *
- * Allows the use of defined variables within the CSS file; also compresses the stylesheet and caches it
+ * Allows the use of defined variables within the CSS file; also compresses the stylesheet and caches it.
  * 
  * @author 		Miles Johnson - www.milesj.me
  * @copyright	Copyright 2006-2009, Miles Johnson, Inc.
@@ -18,7 +18,7 @@ class Compression {
 	 * @access public
 	 * @var int 
 	 */
-	public $version = '1.4';
+	public $version = '1.5';
 	
 	/**
 	 * Is cacheing enabled?
@@ -34,23 +34,23 @@ class Compression {
 	 * @access private
 	 * @var string
 	 */
-	private $__cachePath = '';
-	
-	/**
-	 * How long to cache the file.
-	 *
-	 * @access private
-	 * @var string
-	 */
-	private $__cacheDuration = '+7 days';
+	private $__cachePath;
 
 	/**
 	 * The path to the css file.
 	 *
 	 * @access private
-	 * @var string
+	 * @var array
 	 */
-	private $__css;
+	private $__css = array();
+
+    /**
+     * The path to the directory holding the css files.
+     *
+     * @access private
+     * @var string
+     */
+    private $__cssPath;
 	
 	/**
 	 * Should the stylesheet be parsed?
@@ -88,21 +88,28 @@ class Compression {
 	 * Loads the css file into the class.
 	 *
 	 * @access public
-	 * @param string $file
+	 * @param string $stylesheets
 	 * @return void 
 	 */
-	public function __construct($file) { 
-		if (file_exists($file) && mb_strtolower(substr(strrchr($file, '.'), 1)) == 'css') {
-			$path = dirname(__FILE__) . DIRECTORY_SEPARATOR;
-			
-			$this->__css = $path . basename($file);
-			$this->__cachePath = $path .'cache'. DIRECTORY_SEPARATOR;
-			$this->__variables = array();
-		} else {
-			trigger_error('Compression::parse(): Stylesheet "'. basename($file) .'" does not exist', E_USER_WARNING);
-			$this->__parse = false;
-		}
-	}
+	public function __construct($stylesheets = array()) {
+        if (!is_array($stylesheets)) {
+            $stylesheets = explode(',', str_replace("\s", '', $stylesheets));
+        }
+
+        if (!empty($stylesheets)) {
+            foreach ($stylesheets as $sheet) {
+                if (mb_strtolower(substr(strrchr($sheet, '.'), 1)) != 'css') {
+                    $sheet = trim($sheet, '.') .'.css';
+                }
+
+                $this->__css[] = basename($sheet);
+                $this->__variables = array();
+            }
+        } else {
+            trigger_error('Compression::__construct(): No stylesheets have been defined', E_USER_WARNING);
+            $this->__parse = false;
+        }
+    }
 	
 	/**
 	 * Binds variables to the CSS stylesheet.
@@ -128,6 +135,7 @@ class Compression {
 				if (substr($variable, 0, 1) != $this->__varPre) {
 					$variable = $this->__varPre . $variable;
 				}
+                
 				if (substr($variable, -1) != $this->__varSuf) {
 					$variable = $variable . $this->__varSuf;
 				}
@@ -164,39 +172,46 @@ class Compression {
 		if ($this->__parse === false) {
 			return;
 		}
-		
-		$cachedCss = $this->__cachePath . basename($this->css);
-		$cache = true;
-		
-		if (file_exists($cachedCss)) {
-			$cssModified = filemtime($this->__css);
-			$cacheModified = filemtime($cachedCss);
-			
-			if ($cssModified > $cacheModified) {
-				$output = $this->__compress();
-			} else {
-				$output = file_get_contents($cachedCss);
-				$cache = false;
-			}
-		} else {
-			$output = $this->__compress();
-			$cssModified = time();
-		}
-		
-		if ($this->__cache === true && $cache === true){
-			$this->__cache($output);
-		}
-		
-		if ($return === true) {
-			return $output;
-		} else {	
-			header("Date: ". date("D, j M Y G:i:s ", $cssModified) ."GMT");
-			header("Content-Type: text/css");
-			header("Expires: ". gmdate("D, j M Y H:i:s", time() + 86400) ." GMT");
-			header("Cache-Control: max-age=86400, must-revalidate"); // HTTP/1.1
-			header("Pragma: cache"); // HTTP/1.0
-			echo $output;
-		}
+
+        $mainOutput = "";
+
+        foreach ($this->__css as $css) {
+            $baseCss = $this->__cssPath . $css;
+            $cachedCss = $this->__cachePath . $css;
+            $cache = true;
+
+            if (file_exists($cachedCss)) {
+                $cssModified = filemtime($baseCss);
+                $cacheModified = filemtime($cachedCss);
+
+                if ($cssModified > $cacheModified) {
+                    $output = $this->__compress($baseCss);
+                } else {
+                    $output = file_get_contents($cachedCss);
+                    $cache = false;
+                }
+            } else {
+                $output = $this->__compress($baseCss);
+                $cssModified = time();
+            }
+
+            if ($this->__cache && $cache){
+                $this->__cache($css, $output);
+            }
+
+            $mainOutput .= $output;
+        }
+
+        if ($return) {
+            return $mainOutput;
+        } else {
+            header("Date: ". date("D, j M Y G:i:s ", $cssModified) ." GMT");
+            header("Content-Type: text/css");
+            header("Expires: ". gmdate("D, j M Y H:i:s", time() + 86400) ." GMT");
+            header("Cache-Control: max-age=86400, must-revalidate"); // HTTP/1.1
+            header("Pragma: cache"); // HTTP/1.0
+            echo $mainOutput;
+        }
 	}
 	
 	/**
@@ -210,25 +225,7 @@ class Compression {
 		if (is_bool($enable)) {
 			$this->__cache = $enable;
 		}
-		return $this;
-	}
-	
-	/**
-	 * Set the path to store the cached files.
-	 *
-	 * @access public
-	 * @param string $path
-	 * @return object
-	 */
-	public function setCachePath($path) {
-		if (empty($path)) {
-			return false;
-		}
-		
-		$path = trim($path, DIRECTORY_SEPARATOR);
-		$path = DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR;
-		$this->__cachePath = $path;
-		
+        
 		return $this;
 	}
 	
@@ -257,20 +254,52 @@ class Compression {
 		
 		return $this;
 	}
+
+    /**
+	 * Set the path to the location of the css files (and cached files).
+	 *
+	 * @access public
+	 * @param string $path
+     * @param string $cacheDir
+	 * @return object
+	 */
+	public function setPath($path, $cacheDir = 'cache') {
+        $root = $_SERVER['DOCUMENT_ROOT'];
+
+		if (empty($path)) {
+			$path = dirname(__FILE__);
+		}
+
+        $path = str_replace('\\', '/', $path);
+
+        if (substr($path, 0, strlen($root)) != $root) {
+            $path = $root . $path;
+        }
+
+        if (substr($path, -1) != DIRECTORY_SEPARATOR) {
+            $path .= DIRECTORY_SEPARATOR;
+        }
+
+        $this->__cssPath = $path;
+        $this->__cachePath = $path . $cacheDir . DIRECTORY_SEPARATOR;
+
+		return $this;
+	}
 	
 	/**
 	 * Creates a cached file of the CSS.
 	 *
 	 * @access private
+     * @param string $css
 	 * @param string $input
 	 * @return string
 	 */
-	private function __cache($input) {
+	private function __cache($css, $input) {
 		if (!is_dir($this->__cachePath)) {
 			mkdir($this->__cachePath, 0777);
 		}
 		
-		$handle = fopen($this->__cachePath . basename($this->__css), 'w');
+		$handle = fopen($this->__cachePath . basename($css), 'w');
 		fwrite($handle, $input);
 		fclose($handle);
 		
@@ -281,10 +310,11 @@ class Compression {
 	 * Compress the CSS and bind the variables.
 	 *
 	 * @access private
+     * @param string $css
 	 * @return string
 	 */
-	private function __compress() {
-		$stylesheet = file_get_contents($this->__css);
+	private function __compress($css) {
+		$stylesheet = file_get_contents($css);
 		
 		// Parse the variables
 		if (!empty($this->__variables)) {
@@ -292,7 +322,7 @@ class Compression {
 		}
 		
 		// Parse the functions
-		$stylesheet = preg_replace_callback('/(?:([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '__parseFunctions'), $stylesheet);
+		$stylesheet = preg_replace_callback('/(?:([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '__functionize'), $stylesheet);
 		
 		// Remove all whitespace
 		$output = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $stylesheet);
@@ -302,7 +332,7 @@ class Compression {
 		$output = str_replace(': ', ':', $output);
 		
 		$ratio  = 100 - (round(mb_strlen($output) / mb_strlen($stylesheet), 3) * 100);
-		$output = "/* file: ". basename($this->__css) .", ratio: $ratio% */ ". $output;
+		$output = "/* file: ". basename($css) .", ratio: $ratio% */ ". $output;
 		
 		return $output;
 	}
@@ -314,9 +344,9 @@ class Compression {
 	 * @param string $matches
 	 * @return string
 	 */
-	private function __parseFunctions($matches) {
+	private function __functionize($matches) {
 		$function = $matches[1];
-		$args = (!empty($matches[2])) ? array_map('trim', explode(',', $matches[2])) : $matches[2];
+		$args = !empty($matches[2]) ? array_map('trim', explode(',', $matches[2])) : $matches[2];
 		
 		// Dont mess with existent css functions
 		if (in_array($function, array('url', 'attr', 'rect', 'rgb', 'alpha', 'lang'))) {

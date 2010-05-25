@@ -5,7 +5,7 @@
  */
 
 // Get the path from the query
-$stylesheet = (isset($_GET['load'])) ? $_GET['load'] : 'style.css';
+$stylesheet = isset($_GET['load']) ? $_GET['load'] : 'style.css';
 
 // Define our custom function!
 function colWidth() {
@@ -20,6 +20,9 @@ require_once('compression.php');
 // Initialize
 $css = new Compression($stylesheet);
 
+// Set the location of the css files; trailing slash optional
+$css->setPath(dirname(__FILE__) . DIRECTORY_SEPARATOR .'css', 'cache');
+
 // Turn cache off for testing purposes
 $css->setCaching(false);
 
@@ -30,4 +33,5 @@ $css->bind(array(
 	'blue'	=> '#0000FF'
 ));
 
+// Output the compressed version
 $css->parse();

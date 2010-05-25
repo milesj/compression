@@ -1,10 +1,10 @@
-Compression v1.4 - CSS Minifier and Caching
+Compression v1.5 - CSS Minifier and Caching
 *******************************************
 
 Requirements
 ============
 
-	* PHP 5.2.x
+    * PHP 5.2.x
 
 Features
 ========
@@ -16,9 +16,11 @@ Features
     * Logs a ratio of how much space was saved during compression
     * Enable or disable caching
     * Cached files and folders are created relative to the parent folder
+    * Or can set the location of your stylesheets
+    * Outputs the appropriate HTTP headers
 
 Documentation
 =============
 
-	* http://www.milesj.me/resources/script/compression
+    * http://www.milesj.me/resources/script/compression
 
