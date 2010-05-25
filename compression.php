@@ -179,6 +179,7 @@ class Compression {
             $baseCss = $this->__cssPath . $css;
             $cachedCss = $this->__cachePath . $css;
             $cache = true;
+            $output = "";
 
             if (file_exists($cachedCss)) {
                 $cssModified = filemtime($baseCss);
@@ -190,9 +191,11 @@ class Compression {
                     $output = file_get_contents($cachedCss);
                     $cache = false;
                 }
-            } else {
+            } else if (file_exists($baseCss)) {
                 $output = $this->__compress($baseCss);
                 $cssModified = time();
+            } else {
+                trigger_error('Compression::parse(): Stylesheet "'. basename($baseCss) .'" could not be found', E_USER_WARNING);
             }
 
             if ($this->__cache && $cache){
@@ -200,6 +203,7 @@ class Compression {
             }
 
             $mainOutput .= $output;
+            unset($cache, $output, $baseCss, $cachedCss);
         }
 
         if ($return) {
@@ -355,7 +359,7 @@ class Compression {
             if (function_exists($function)) {
                 return call_user_func_array($function, $args);
             } else {
-                trigger_error('Compression::__parseFunctions(): Custom function "'. $function .'" does not exist', E_USER_WARNING);
+                trigger_error('Compression::__functionize(): Custom function "'. $function .'" does not exist', E_USER_WARNING);
             }
         }
 
