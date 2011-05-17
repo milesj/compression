@@ -69,22 +69,6 @@ class Compression {
     protected $_variables;
 
     /**
-     * The prefix delimiter of your variable.
-     *
-     * @access protected
-     * @var string
-     */
-    protected $_varPre = '[';
-
-    /**
-     * The suffix delimiter of your variable.
-     *
-     * @access protected
-     * @var string
-     */
-    protected $_varSuf = ']';
-
-    /**
      * Loads the css file into the class.
      *
      * @access public
@@ -131,15 +115,11 @@ class Compression {
             if (!empty($variable) && !empty($value)) {
                 $variable = preg_replace('/[^-_a-zA-Z0-9]/i', '', $variable);
 
-                if (substr($variable, 0, 1) != $this->_varPre) {
-                    $variable = $this->_varPre . $variable;
+                if (substr($variable, 0, 1) != '@') {
+                    $variable = '@'. $variable;
                 }
 
-                if (substr($variable, -1) != $this->_varSuf) {
-                    $variable = $variable . $this->_varSuf;
-                }
-
-                $this->_variables[$variable] = trim(htmlentities(strip_tags($value), ENT_NOQUOTES, 'UTF-8'));
+                $this->_variables[$variable] = trim(strip_tags($value));
             }
         }
 
@@ -180,19 +160,24 @@ class Compression {
             $cache = true;
             $output = "";
 
+			// Use cache or regenerate
             if (file_exists($cachedCss)) {
                 $cssModified = filemtime($baseCss);
                 $cacheModified = filemtime($cachedCss);
 
                 if ($cssModified > $cacheModified) {
-                    $output = $this->_compress($baseCss);
+                    $output = $this->_compress($baseCss, $css);
                 } else {
                     $output = file_get_contents($cachedCss);
                     $cache = false;
                 }
+
+			// Use base CSS
             } else if (file_exists($baseCss)) {
-                $output = $this->_compress($baseCss);
+                $output = $this->_compress($baseCss, $css);
                 $cssModified = time();
+
+			// No css
             } else {
                 continue;
             }
@@ -227,34 +212,6 @@ class Compression {
      */
     public function setCaching($enable = true) {
         $this->_cache = (boolean) $enable;
-
-        return $this;
-    }
-
-    /**
-     * Set the delimiters to use for the inline variables.
-     *
-     * @access public
-     * @param string $prefix
-     * @param string $suffix
-     * @return object
-     */
-    public function setDelimiters($prefix = '[', $suffix = ']') {
-        if (empty($prefix) || empty($suffix)) {
-            return false;
-        }
-
-        $prefix = preg_replace('/[^-_=+;:<>{}\[\]|]/i', '', $prefix);
-
-        if ($prefix != '') {
-            $this->_varPre = $prefix;
-        }
-
-        $suffix = preg_replace('/[^-_=+;:<>{}\[\]|]/i', '', $suffix);
-		
-        if ($suffix != '') {
-            $this->_varSuf = $suffix;
-        }
 
         return $this;
     }
@@ -309,18 +266,19 @@ class Compression {
      *
      * @access protected
      * @param string $css
+	 * @param string $name
      * @return string
      */
-    protected function _compress($css) {
+    protected function _compress($css, $name) {
         $stylesheet = file_get_contents($css);
 
         // Parse the variables
         if (!empty($this->_variables)) {
-            $stylesheet = str_replace(array_keys($this->_variables), array_values($this->_variables), $stylesheet);
+            $stylesheet = str_replace(array_keys($this->_variables), $this->_variables, $stylesheet);
         }
 
         // Parse the functions
-        $stylesheet = preg_replace_callback('/(?:([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
+        $stylesheet = preg_replace_callback('/(?:@([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
 
         // Remove all whitespace
         $output = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $stylesheet);
@@ -329,8 +287,8 @@ class Compression {
         $output = str_replace(array(' }', '} '), '}', $output);
         $output = str_replace(': ', ':', $output);
 
-        $ratio  = 100 - (round(mb_strlen($output) / mb_strlen($stylesheet), 3) * 100);
-        $output = "/* file: ". $css .", ratio: $ratio% */ \n". $output;
+        $ratio  = 100 - (round(strlen($output) / strlen($stylesheet), 3) * 100);
+        $output = "/* $name ($ratio%) */\n". $output;
 
         return $output;
     }
@@ -343,21 +301,15 @@ class Compression {
      * @return string
      */
     protected function _functionize($matches) {
-        $function = $matches[1];
+        $function = str_replace('@', '', $matches[1]);
         $args = !empty($matches[2]) ? array_map('trim', explode(',', $matches[2])) : $matches[2];
 
         // Dont mess with existent css functions
-        if (in_array($function, array('url', 'attr', 'rect', 'rgb', 'alpha', 'lang'))) {
-            return $matches[0];
-        } else {
-            if (function_exists($function)) {
-                return call_user_func_array($function, $args);
-            } else {
-                trigger_error('Compression::_functionize(): Custom function "'. $function .'" does not exist', E_USER_WARNING);
-            }
-        }
-
-        return null;
+		if (function_exists($function)) {
+			return call_user_func_array($function, $args);
+		} else {
+			trigger_error(sprintf('%s(): Custom function %s does not exist', __METHOD__, $function), E_USER_WARNING);
+		}
     }
 
 }

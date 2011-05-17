@@ -8,10 +8,13 @@
 $stylesheet = isset($_GET['load']) ? $_GET['load'] : 'style.css';
 
 // Define our custom function!
-function colWidth() {
-	$args = func_get_args(); 
-	$width = $args[0] * 100;
+function colWidth($size, $base = 100) {
+	$width = $size * $base;
 	return $width .'px';
+}
+
+function debug($var) {
+	echo '<pre>'. print_r($var, true) .'</pre>';
 }
 
 // Require class
@@ -28,10 +31,12 @@ $css->setCaching(false);
 
 // Bind the variables and parse
 $css->bind(array(
-	'img' 	=> '/images/',
-	'font' 	=> '"Verdana", "Arial", sans-serif',
-	'blue'	=> '#0000FF'
+	'font_family' => '"Verdana", "Arial", sans-serif',
+	'blue' => '#0000FF',
+	'img' => '/images'
 ));
 
 // Output the compressed version
 $css->parse();
+
+debug($css);

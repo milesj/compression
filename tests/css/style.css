@@ -6,15 +6,15 @@
 	border: none; }
 	
 body {
-	font: normal 12px [font];
+	font: normal 12px @font_family;
 	color: #000000;
-	background: #ffffff url("[img]bg.jpg") top left repeat-x; }
+	background: #ffffff url("@img/bg.jpg") 0 0 repeat-x; }
 	
 a {
-	color: [blue];
+	color: @blue;
 	text-decoration: underline; }
 	
-h1 { color: [blue]; }
+h1 { color: @blue; }
 	
 #wrapper {
 	width: 800px;
