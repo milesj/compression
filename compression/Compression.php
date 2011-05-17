@@ -76,11 +76,11 @@ class Compression {
      * @return void
      */
     public function __construct($stylesheets = array()) {
-        if (!is_array($stylesheets)) {
-            $stylesheets = explode(',', trim($stylesheets));
-        }
-
         if (!empty($stylesheets)) {
+			if (!is_array($stylesheets)) {
+				$stylesheets = explode(',', trim($stylesheets));
+			}
+			
             foreach ($stylesheets as $sheet) {
                 if (strtolower(substr(strrchr($sheet, '.'), 1)) != 'css') {
                     $sheet = trim($sheet, '.') .'.css';
@@ -89,6 +89,8 @@ class Compression {
                 $this->_css[] = trim($sheet, '/');
                 $this->_variables = array();
             }
+
+			$this->setPath();
         } else {
             $this->_parse = false;
         }
@@ -221,22 +223,22 @@ class Compression {
      *
      * @access public
      * @param string $path
-     * @param string $cacheDir
+     * @param string $cachePath
      * @return object
      */
-    public function setPath($path, $cacheDir = '_cache') {
+    public function setPath($path= null, $cachePath = '_cache') {
         if (empty($path)) {
             $path = dirname(__FILE__);
         }
 
-        $path = str_replace('\\', '/', $path);
+        $path = trim(str_replace('\\', '/', $path), '/');
 
         if (substr($path, -1) != '/') {
             $path .= '/';
         }
 
         $this->_cssPath = $path;
-        $this->_cachePath = $path . $cacheDir . '/';
+        $this->_cachePath = $path . $cachePath . '/';
 
         return $this;
     }
@@ -245,32 +247,34 @@ class Compression {
      * Creates a cached file of the CSS.
      *
      * @access protected
-     * @param string $css
-     * @param string $input
-     * @return string
+     * @param string $name
+     * @param string $content
+     * @return void
      */
-    protected function _cache($css, $input) {
-        if (!is_dir($this->_cachePath)) {
-            mkdir($this->_cachePath, 0777);
-        }
+    protected function _cache($name, $content) {
+		$path = $this->_cachePath . $name;
+		$dir = dirname($path);
 
-        $handle = fopen($this->_cachePath . basename($css), 'w');
-        fwrite($handle, $input);
-        fclose($handle);
+		if (!is_dir($dir)) {
+			mkdir($dir, 0777);
 
-        return true;
+		} else if (!is_writeable($dir)) {
+			chmod($dir, 0777);
+		}
+
+		file_put_contents($path, $content);
     }
 
     /**
      * Compress the CSS and bind the variables.
      *
      * @access protected
-     * @param string $css
+     * @param string $path
 	 * @param string $name
      * @return string
      */
-    protected function _compress($css, $name) {
-        $stylesheet = file_get_contents($css);
+    protected function _compress($path, $name) {
+        $stylesheet = file_get_contents($path);
 
         // Parse the variables
         if (!empty($this->_variables)) {
@@ -301,7 +305,7 @@ class Compression {
      * @return string
      */
     protected function _functionize($matches) {
-        $function = str_replace('@', '', $matches[1]);
+        $function = str_replace('@', '', trim($matches[1]));
         $args = !empty($matches[2]) ? array_map('trim', explode(',', $matches[2])) : $matches[2];
 
         // Dont mess with existent css functions
