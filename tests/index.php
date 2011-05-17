@@ -1,20 +1,25 @@
 <?php
 /**
- * Example file to load CSS files through Compression
- * css.php?load=style.css
+ * Compression
+ *
+ * A basic class that loads CSS files, compress them, and saves the resulting output into a cached file.
+ * Also supports dynamic variables and functions within the CSS file.
+ *
+ * @author		Miles Johnson - http://milesj.me
+ * @copyright	Copyright 2006-2011, Miles Johnson, Inc.
+ * @license		http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
+ * @link		http://milesj.me/code/php/compression
  */
 
-// Get the path from the query: index.php?load=style.css
-$stylesheet = isset($_GET['load']) ? $_GET['load'] : 'style.css';
-
-// Define our custom function!
+// Define our dynamic function
+// Can be used in the CSS file as @colWidth()
 function colWidth($size, $base = 100) {
 	return ($size * $base) .'px';
 }
 
-function debug($var) {
-	echo '<pre>'. print_r($var, true) .'</pre>';
-}
+// Get the path from the query: index.php?load=style.css,sub/style.css
+// Separate multiple stylesheets with a comma
+$stylesheet = isset($_GET['load']) ? $_GET['load'] : 'style.css';
 
 // Include class and instantiate
 include_once '../compression/Compression.php';
@@ -25,7 +30,7 @@ $css = new Compression($stylesheet);
 $css->setPath(dirname(__FILE__) .'/css');
 
 // Turn caching off for testing purposes
-//$css->setCaching(false);
+$css->setCaching(false);
 
 // Bind the variables and parse
 $css->bind(array(
@@ -36,5 +41,3 @@ $css->bind(array(
 
 // Output the compressed version
 echo $css->parse();
-
-debug($css);

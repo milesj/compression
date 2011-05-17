@@ -5,10 +5,10 @@
  * A basic class that loads CSS files, compress them, and saves the resulting output into a cached file.
  * Also supports dynamic variables and functions within the CSS file.
  *
- * @author       Miles Johnson - http://milesj.me
- * @copyright    Copyright 2006-2011, Miles Johnson, Inc.
- * @license      http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
- * @link         http://milesj.me/code/php/compression
+ * @author		Miles Johnson - http://milesj.me
+ * @copyright	Copyright 2006-2011, Miles Johnson, Inc.
+ * @license		http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
+ * @link		http://milesj.me/code/php/compression
  */
 
 class Compression {
@@ -17,7 +17,7 @@ class Compression {
 	 * Current version.
 	 *
 	 * @access public
-	 * @var int
+	 * @var string
 	 */
 	public $version = '1.6';
 
@@ -67,7 +67,7 @@ class Compression {
 	 * @access protected
 	 * @var array
 	 */
-	protected $_variables;
+	protected $_variables = array();
 
 	/**
 	 * Loads the CSS file into the class.
@@ -78,7 +78,7 @@ class Compression {
 	 */
 	public function __construct($stylesheets = array()) {
 		if (!empty($stylesheets)) {
-			if (!is_array($stylesheets)) {
+			if (is_string($stylesheets)) {
 				$stylesheets = explode(',', trim($stylesheets));
 			}
 
@@ -98,10 +98,10 @@ class Compression {
 	}
 
 	/**
-	 * Binds variables to the CSS stylesheet.
+	 * Binds variables to the CSS stylesheets.
 	 *
 	 * @access public
-	 * @param string $variable
+	 * @param string|array $variable
 	 * @param string $value
 	 * @return this
 	 * @chainable
@@ -129,7 +129,7 @@ class Compression {
 	}
 
 	/**
-	 * Forces the user's browser not to cache the results of the current request.
+	 * Forces the users browser not to cache the results of the current request.
 	 *
 	 * @access public
 	 * @return void
@@ -143,17 +143,17 @@ class Compression {
 	}
 
 	/**
-	 * Parses the stylesheet; does required logic for caching and compressing.
+	 * Parses the stylesheet; does important logic for caching and compressing.
 	 *
 	 * @access public
 	 * @return string
 	 */
 	public function parse() {
-		if (!$this->_parse || empty($this->_css)) {
-			return;
-		}
-
 		$response = "";
+
+		if (!$this->_parse || empty($this->_css)) {
+			return $response;
+		}
 
 		foreach ($this->_css as $css) {
 			$baseCss = $this->_cssPath . $css;
@@ -187,7 +187,6 @@ class Compression {
 			}
 
 			$response .= $output ."\n\n";
-			unset($cache, $output, $baseCss, $cachedCss);
 		}
 
 		header("Date: ". date("D, j M Y G:i:s ", $cssModified) ." GMT");
@@ -200,7 +199,7 @@ class Compression {
 	}
 
 	/**
-	 * Is caching enabled or disabled?
+	 * Enable or disable caching.
 	 *
 	 * @access public
 	 * @param boolean $enable
@@ -294,7 +293,7 @@ class Compression {
 	}
 
 	/**
-	 * Parses the document and runs custom inline functions.
+	 * Parses the document and execute custom inline functions.
 	 *
 	 * @access protected
 	 * @param string $matches
