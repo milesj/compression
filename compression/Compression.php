@@ -21,7 +21,7 @@ class Compression {
     public $version = '1.6';
 
     /**
-     * Is cacheing enabled?
+     * Is caching enabled?
      *
      * @access protected
      * @var boolean
@@ -29,7 +29,7 @@ class Compression {
     protected $_cache = true;
 
     /**
-     * Path to the cached files, relative to the given css.
+     * Path to the cached files, relative to the given CSS path.
      *
      * @access protected
      * @var string
@@ -37,7 +37,7 @@ class Compression {
     protected $_cachePath;
 
     /**
-     * The path to the css file.
+     * The paths of the CSS files.
      *
      * @access protected
      * @var array
@@ -45,7 +45,7 @@ class Compression {
     protected $_css = array();
 
     /**
-     * The path to the directory holding the css files.
+     * The path to the directory holding the CSS files.
      *
      * @access protected
      * @var string
@@ -61,7 +61,7 @@ class Compression {
     protected $_parse = true;
 
     /**
-     * Array of css variable references.
+     * Array of CSS variable references.
      *
      * @access protected
      * @var array
@@ -69,7 +69,7 @@ class Compression {
     protected $_variables;
 
     /**
-     * Loads the css file into the class.
+     * Loads the CSS file into the class.
      *
      * @access public
      * @param string|array $stylesheets
@@ -102,7 +102,8 @@ class Compression {
      * @access public
      * @param string $variable
      * @param string $value
-     * @return object
+     * @return this
+	 * @chainable
      */
     public function bind($variable, $value = null) {
         if (!$this->_parse) {
@@ -114,15 +115,13 @@ class Compression {
                 $this->bind($var, $value);
             }
         } else {
-            if (!empty($variable) && !empty($value)) {
-                $variable = preg_replace('/[^-_a-zA-Z0-9]/i', '', $variable);
+			$variable = preg_replace('/[^-_a-zA-Z0-9]/i', '', $variable);
 
-                if (substr($variable, 0, 1) != '@') {
-                    $variable = '@'. $variable;
-                }
+			if (substr($variable, 0, 1) != '@') {
+				$variable = '@'. $variable;
+			}
 
-                $this->_variables[$variable] = trim(strip_tags($value));
-            }
+			$this->_variables[$variable] = trim(strip_tags($value));
         }
 
         return $this;
@@ -210,7 +209,8 @@ class Compression {
      *
      * @access public
      * @param boolean $enable
-     * @return object
+     * @return this
+	 * @chainable
      */
     public function setCaching($enable = true) {
         $this->_cache = (boolean) $enable;
@@ -224,7 +224,8 @@ class Compression {
      * @access public
      * @param string $path
      * @param string $cachePath
-     * @return object
+     * @return this
+	 * @chainable
      */
     public function setPath($path= null, $cachePath = '_cache') {
         if (empty($path)) {
