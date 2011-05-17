@@ -4,85 +4,85 @@
  *
  * Allows the use of defined variables within the CSS file; also compresses the stylesheet and caches it.
  *
- * @author       Miles Johnson - www.milesj.me
- * @copyright    Copyright 2006-2009, Miles Johnson, Inc.
- * @license      http://www.opensource.org/licenses/mit-license.php - Licensed under The MIT License
- * @link         www.milesj.me/resources/script/compression
+ * @author       Miles Johnson - http://milesj.me
+ * @copyright    Copyright 2006-2011, Miles Johnson, Inc.
+ * @license      http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
+ * @link         http://milesj.me/code/php/compression
  */
 
 class Compression {
 
     /**
-     * Current version: www.milesj.me/resources/logs/compression
+     * Current version.
      *
      * @access public
      * @var int
      */
-    public $version = '1.5';
+    public $version = '1.6';
 
     /**
      * Is cacheing enabled?
      *
-     * @access private
+     * @access protected
      * @var boolean
      */
-    private $__cache = true;
+    protected $_cache = true;
 
     /**
      * Path to the cached files, relative to the given css.
      *
-     * @access private
+     * @access protected
      * @var string
      */
-    private $__cachePath;
+    protected $_cachePath;
 
     /**
      * The path to the css file.
      *
-     * @access private
+     * @access protected
      * @var array
      */
-    private $__css = array();
+    protected $_css = array();
 
     /**
      * The path to the directory holding the css files.
      *
-     * @access private
+     * @access protected
      * @var string
      */
-    private $__cssPath;
+    protected $_cssPath;
 
     /**
      * Should the stylesheet be parsed?
      *
-     * @access private
+     * @access protected
      * @var boolean
      */
-    private $__parse = true;
+    protected $_parse = true;
 
     /**
      * Array of css variable references.
      *
-     * @access private
+     * @access protected
      * @var array
      */
-    private $__variables;
+    protected $_variables;
 
     /**
      * The prefix delimiter of your variable.
      *
-     * @access private
+     * @access protected
      * @var string
      */
-    private $__varPre = '[';
+    protected $_varPre = '[';
 
     /**
      * The suffix delimiter of your variable.
      *
-     * @access private
+     * @access protected
      * @var string
      */
-    private $__varSuf = ']';
+    protected $_varSuf = ']';
 
     /**
      * Loads the css file into the class.
@@ -102,12 +102,12 @@ class Compression {
                     $sheet = trim($sheet, '.') .'.css';
                 }
 
-                $this->__css[] = basename($sheet);
-                $this->__variables = array();
+                $this->_css[] = basename($sheet);
+                $this->_variables = array();
             }
         } else {
-            trigger_error('Compression::__construct(): No stylesheets have been defined', E_USER_WARNING);
-            $this->__parse = false;
+            trigger_error('Compression::_construct(): No stylesheets have been defined', E_USER_WARNING);
+            $this->_parse = false;
         }
     }
 
@@ -120,7 +120,7 @@ class Compression {
      * @return object
      */
     public function bind($variable, $value = null) {
-        if ($this->__parse === false) {
+        if ($this->_parse === false) {
             return;
         }
 
@@ -132,15 +132,15 @@ class Compression {
             if (!empty($variable) && !empty($value)) {
                 $variable = preg_replace('/[^-_a-zA-Z0-9]/i', '', $variable);
 
-                if (substr($variable, 0, 1) != $this->__varPre) {
-                    $variable = $this->__varPre . $variable;
+                if (substr($variable, 0, 1) != $this->_varPre) {
+                    $variable = $this->_varPre . $variable;
                 }
 
-                if (substr($variable, -1) != $this->__varSuf) {
-                    $variable = $variable . $this->__varSuf;
+                if (substr($variable, -1) != $this->_varSuf) {
+                    $variable = $variable . $this->_varSuf;
                 }
 
-                $this->__variables[$variable] = trim(htmlentities(strip_tags($value), ENT_NOQUOTES, 'UTF-8'));
+                $this->_variables[$variable] = trim(htmlentities(strip_tags($value), ENT_NOQUOTES, 'UTF-8'));
             }
         }
 
@@ -169,15 +169,15 @@ class Compression {
      * @return string
      */
     public function parse($return = false) {
-        if ($this->__parse === false) {
+        if ($this->_parse === false) {
             return;
         }
 
         $mainOutput = "";
 
-        foreach ($this->__css as $css) {
-            $baseCss = $this->__cssPath . $css;
-            $cachedCss = $this->__cachePath . $css;
+        foreach ($this->_css as $css) {
+            $baseCss = $this->_cssPath . $css;
+            $cachedCss = $this->_cachePath . $css;
             $cache = true;
             $output = "";
 
@@ -186,20 +186,20 @@ class Compression {
                 $cacheModified = filemtime($cachedCss);
 
                 if ($cssModified > $cacheModified) {
-                    $output = $this->__compress($baseCss);
+                    $output = $this->_compress($baseCss);
                 } else {
                     $output = file_get_contents($cachedCss);
                     $cache = false;
                 }
             } else if (file_exists($baseCss)) {
-                $output = $this->__compress($baseCss);
+                $output = $this->_compress($baseCss);
                 $cssModified = time();
             } else {
                 trigger_error('Compression::parse(): Stylesheet "'. basename($baseCss) .'" could not be found', E_USER_WARNING);
             }
 
-            if ($this->__cache && $cache){
-                $this->__cache($css, $output);
+            if ($this->_cache && $cache){
+                $this->_cache($css, $output);
             }
 
             $mainOutput .= $output;
@@ -227,7 +227,7 @@ class Compression {
      */
     public function setCaching($enable = true) {
         if (is_bool($enable)) {
-            $this->__cache = $enable;
+            $this->_cache = $enable;
         }
 
         return $this;
@@ -248,12 +248,12 @@ class Compression {
 
         $prefix = preg_replace('/[^-_=+;:<>{}\[\]|]/i', '', $prefix);
         if ($prefix != '') {
-            $this->__varPre = $prefix;
+            $this->_varPre = $prefix;
         }
 
         $suffix = preg_replace('/[^-_=+;:<>{}\[\]|]/i', '', $suffix);
         if ($suffix != '') {
-            $this->__varSuf = $suffix;
+            $this->_varSuf = $suffix;
         }
 
         return $this;
@@ -271,7 +271,7 @@ class Compression {
         $root = $_SERVER['DOCUMENT_ROOT'];
 
         if (empty($path)) {
-            $path = dirname(__FILE__);
+            $path = dirname(_FILE_);
         }
 
         $path = str_replace('\\', '/', $path);
@@ -284,8 +284,8 @@ class Compression {
             $path .= DIRECTORY_SEPARATOR;
         }
 
-        $this->__cssPath = $path;
-        $this->__cachePath = $path . $cacheDir . DIRECTORY_SEPARATOR;
+        $this->_cssPath = $path;
+        $this->_cachePath = $path . $cacheDir . DIRECTORY_SEPARATOR;
 
         return $this;
     }
@@ -293,17 +293,17 @@ class Compression {
     /**
      * Creates a cached file of the CSS.
      *
-     * @access private
+     * @access protected
      * @param string $css
      * @param string $input
      * @return string
      */
-    private function __cache($css, $input) {
-        if (!is_dir($this->__cachePath)) {
-            mkdir($this->__cachePath, 0777);
+    protected function _cache($css, $input) {
+        if (!is_dir($this->_cachePath)) {
+            mkdir($this->_cachePath, 0777);
         }
 
-        $handle = fopen($this->__cachePath . basename($css), 'w');
+        $handle = fopen($this->_cachePath . basename($css), 'w');
         fwrite($handle, $input);
         fclose($handle);
 
@@ -313,20 +313,20 @@ class Compression {
     /**
      * Compress the CSS and bind the variables.
      *
-     * @access private
+     * @access protected
      * @param string $css
      * @return string
      */
-    private function __compress($css) {
+    protected function _compress($css) {
         $stylesheet = file_get_contents($css);
 
         // Parse the variables
-        if (!empty($this->__variables)) {
-            $stylesheet = str_replace(array_keys($this->__variables), array_values($this->__variables), $stylesheet);
+        if (!empty($this->_variables)) {
+            $stylesheet = str_replace(array_keys($this->_variables), array_values($this->_variables), $stylesheet);
         }
 
         // Parse the functions
-        $stylesheet = preg_replace_callback('/(?:([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '__functionize'), $stylesheet);
+        $stylesheet = preg_replace_callback('/(?:([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
 
         // Remove all whitespace
         $output = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $stylesheet);
@@ -344,11 +344,11 @@ class Compression {
     /**
      * Parses the document and runs custom inline functions.
      *
-     * @access private
+     * @access protected
      * @param string $matches
      * @return string
      */
-    private function __functionize($matches) {
+    protected function _functionize($matches) {
         $function = $matches[1];
         $args = !empty($matches[2]) ? array_map('trim', explode(',', $matches[2])) : $matches[2];
 
@@ -359,7 +359,7 @@ class Compression {
             if (function_exists($function)) {
                 return call_user_func_array($function, $args);
             } else {
-                trigger_error('Compression::__functionize(): Custom function "'. $function .'" does not exist', E_USER_WARNING);
+                trigger_error('Compression::_functionize(): Custom function "'. $function .'" does not exist', E_USER_WARNING);
             }
         }
 
