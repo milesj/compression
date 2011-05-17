@@ -35,6 +35,6 @@ $css->bind(array(
 ));
 
 // Output the compressed version
-$css->parse();
+echo $css->parse();
 
 debug($css);
