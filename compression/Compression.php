@@ -2,7 +2,7 @@
 /**
  * Compression
  *
- * A basic class that loads CSS files, compress them, and saves the resulting output into a cached file.
+ * A basic class that loads CSS files, compresses them, and saves the resulting output into a cached file.
  * Also supports dynamic variables and functions within the CSS file.
  *
  * @author		Miles Johnson - http://milesj.me
@@ -19,7 +19,7 @@ class Compression {
 	 * @access public
 	 * @var string
 	 */
-	public $version = '1.6';
+	public $version = '2.0';
 
 	/**
 	 * Is caching enabled?
@@ -271,13 +271,13 @@ class Compression {
 	protected function _compress($path, $name) {
 		$stylesheet = file_get_contents($path);
 
+		// Parse the functions
+		$stylesheet = preg_replace_callback('/(?:@([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
+
 		// Parse the variables
 		if (!empty($this->_variables)) {
 			$stylesheet = str_replace(array_keys($this->_variables), $this->_variables, $stylesheet);
 		}
-
-		// Parse the functions
-		$stylesheet = preg_replace_callback('/(?:@([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
 
 		// Remove all whitespace
 		$output = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $stylesheet);
@@ -307,7 +307,7 @@ class Compression {
 		if (function_exists($function)) {
 			return call_user_func_array($function, $args);
 		} else {
-			trigger_error(sprintf('%s(): Custom function %s does not exist', __METHOD__, $function), E_USER_WARNING);
+			trigger_error(sprintf('%s(): Custom function %s does not exist.', __METHOD__, $function), E_USER_WARNING);
 		}
 	}
 
