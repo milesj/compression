@@ -272,7 +272,7 @@ class Compression {
 		$stylesheet = file_get_contents($path);
 
 		// Parse the functions
-		$stylesheet = preg_replace_callback('/(?:@([_a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
+		$stylesheet = preg_replace_callback('/(?:@([_\.a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
 
 		// Parse the variables
 		if (!empty($this->_variables)) {
@@ -303,12 +303,17 @@ class Compression {
 		$function = str_replace('@', '', trim($matches[1]));
 		$args = !empty($matches[2]) ? array_map('trim', explode(',', $matches[2])) : $matches[2];
 
-		// Dont mess with existent css functions
-		if (function_exists($function)) {
+		if (strpos($function, '.') !== false) {
+			list($class, $method) = explode('.', $function);
+
+			if (method_exists($class, $method)) {
+				return call_user_func_array(array($class, $method), $args);
+			}
+		} else if (function_exists($function)) {
 			return call_user_func_array($function, $args);
-		} else {
-			trigger_error(sprintf('%s(): Custom function %s does not exist.', __METHOD__, $function), E_USER_WARNING);
 		}
+
+		trigger_error(sprintf('%s(): Custom function %s does not exist.', __METHOD__, $function), E_USER_WARNING);
 	}
 
 }
