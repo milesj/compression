@@ -88,25 +88,24 @@ class Compression {
      * Loads the css file into the class.
      *
      * @access public
-     * @param string $stylesheets
+     * @param string|array $stylesheets
      * @return void
      */
     public function __construct($stylesheets = array()) {
         if (!is_array($stylesheets)) {
-            $stylesheets = explode(',', str_replace("\s", '', $stylesheets));
+            $stylesheets = explode(',', trim($stylesheets));
         }
 
         if (!empty($stylesheets)) {
             foreach ($stylesheets as $sheet) {
-                if (mb_strtolower(substr(strrchr($sheet, '.'), 1)) != 'css') {
+                if (strtolower(substr(strrchr($sheet, '.'), 1)) != 'css') {
                     $sheet = trim($sheet, '.') .'.css';
                 }
 
-                $this->_css[] = basename($sheet);
+                $this->_css[] = trim($sheet, '/');
                 $this->_variables = array();
             }
         } else {
-            trigger_error('Compression::_construct(): No stylesheets have been defined', E_USER_WARNING);
             $this->_parse = false;
         }
     }
@@ -120,7 +119,7 @@ class Compression {
      * @return object
      */
     public function bind($variable, $value = null) {
-        if ($this->_parse === false) {
+        if (!$this->_parse) {
             return;
         }
 
@@ -169,11 +168,11 @@ class Compression {
      * @return string
      */
     public function parse($return = false) {
-        if ($this->_parse === false) {
+        if (!$this->_parse) {
             return;
         }
 
-        $mainOutput = "";
+        $response = "";
 
         foreach ($this->_css as $css) {
             $baseCss = $this->_cssPath . $css;
@@ -195,40 +194,39 @@ class Compression {
                 $output = $this->_compress($baseCss);
                 $cssModified = time();
             } else {
-                trigger_error('Compression::parse(): Stylesheet "'. basename($baseCss) .'" could not be found', E_USER_WARNING);
+                continue;
             }
 
             if ($this->_cache && $cache){
                 $this->_cache($css, $output);
             }
 
-            $mainOutput .= $output;
+            $response .= $output ."\n\n";
             unset($cache, $output, $baseCss, $cachedCss);
         }
 
         if ($return) {
-            return $mainOutput;
-        } else {
-            header("Date: ". date("D, j M Y G:i:s ", $cssModified) ." GMT");
-            header("Content-Type: text/css");
-            header("Expires: ". gmdate("D, j M Y H:i:s", time() + 86400) ." GMT");
-            header("Cache-Control: max-age=86400, must-revalidate"); // HTTP/1.1
-            header("Pragma: cache"); // HTTP/1.0
-            echo $mainOutput;
+            return $response;
         }
+
+		header("Date: ". date("D, j M Y G:i:s ", $cssModified) ." GMT");
+		header("Content-Type: text/css");
+		header("Expires: ". gmdate("D, j M Y H:i:s", time() + 86400) ." GMT");
+		header("Cache-Control: max-age=86400, must-revalidate"); // HTTP/1.1
+		header("Pragma: cache"); // HTTP/1.0
+		
+		echo $response;
     }
 
     /**
-     * Is cacheing enabled or disabled?
+     * Is caching enabled or disabled?
      *
      * @access public
      * @param boolean $enable
      * @return object
      */
     public function setCaching($enable = true) {
-        if (is_bool($enable)) {
-            $this->_cache = $enable;
-        }
+        $this->_cache = (boolean) $enable;
 
         return $this;
     }
@@ -242,16 +240,18 @@ class Compression {
      * @return object
      */
     public function setDelimiters($prefix = '[', $suffix = ']') {
-        if (empty($prefix) && empty($suffix)) {
+        if (empty($prefix) || empty($suffix)) {
             return false;
         }
 
         $prefix = preg_replace('/[^-_=+;:<>{}\[\]|]/i', '', $prefix);
+
         if ($prefix != '') {
             $this->_varPre = $prefix;
         }
 
         $suffix = preg_replace('/[^-_=+;:<>{}\[\]|]/i', '', $suffix);
+		
         if ($suffix != '') {
             $this->_varSuf = $suffix;
         }
@@ -267,25 +267,19 @@ class Compression {
      * @param string $cacheDir
      * @return object
      */
-    public function setPath($path, $cacheDir = 'cache') {
-        $root = $_SERVER['DOCUMENT_ROOT'];
-
+    public function setPath($path, $cacheDir = '_cache') {
         if (empty($path)) {
-            $path = dirname(_FILE_);
+            $path = dirname(__FILE__);
         }
 
         $path = str_replace('\\', '/', $path);
 
-        if (substr($path, 0, strlen($root)) != $root) {
-            $path = $root . $path;
-        }
-
-        if (substr($path, -1) != DIRECTORY_SEPARATOR) {
-            $path .= DIRECTORY_SEPARATOR;
+        if (substr($path, -1) != '/') {
+            $path .= '/';
         }
 
         $this->_cssPath = $path;
-        $this->_cachePath = $path . $cacheDir . DIRECTORY_SEPARATOR;
+        $this->_cachePath = $path . $cacheDir . '/';
 
         return $this;
     }
@@ -336,7 +330,7 @@ class Compression {
         $output = str_replace(': ', ':', $output);
 
         $ratio  = 100 - (round(mb_strlen($output) / mb_strlen($stylesheet), 3) * 100);
-        $output = "/* file: ". basename($css) .", ratio: $ratio% */ ". $output;
+        $output = "/* file: ". $css .", ratio: $ratio% */ \n". $output;
 
         return $output;
     }

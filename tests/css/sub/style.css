@@ -1,0 +1,5 @@
+/* Dynamic functions */
+
+.col1 { width: colWidth(5); }
+.col2 { width: colWidth(3); }
+.col3 { width: colWidth(1); }

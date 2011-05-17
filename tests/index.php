@@ -15,15 +15,15 @@ function colWidth() {
 }
 
 // Require class
-require_once('compression.php');
+include_once '../compression/Compression.php';
 
 // Initialize
 $css = new Compression($stylesheet);
 
 // Set the location of the css files; trailing slash optional
-$css->setPath(dirname(__FILE__) . DIRECTORY_SEPARATOR .'css', 'cache');
+$css->setPath(dirname(__FILE__) .'/css');
 
-// Turn cache off for testing purposes
+// Turn caching off for testing purposes
 $css->setCaching(false);
 
 // Bind the variables and parse

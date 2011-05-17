@@ -1,4 +1,4 @@
-/* Basic Usage */
+/* Variable Replacement */
 
 * {
 	margin: 0;
@@ -19,9 +19,3 @@ h1 { color: [blue]; }
 #wrapper {
 	width: 800px;
 	margin: 0 auto; }
-	
-/* Using PHP functions within CSS */
-
-.col1 { width: colWidth(5); }
-.col2 { width: colWidth(3); }
-.col3 { width: colWidth(1); }
