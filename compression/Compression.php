@@ -5,7 +5,7 @@
  * A basic class that loads CSS files, compresses them, and saves the resulting output into a cached file.
  * Also supports dynamic variables and functions within the CSS file.
  *
- * @version		2.1
+ * @version		2.1.1
  * @author		Miles Johnson - http://milesj.me
  * @copyright	Copyright 2006-2011, Miles Johnson, Inc.
  * @license		http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
@@ -20,7 +20,7 @@ class Compression {
 	 * @access public
 	 * @var string
 	 */
-	public $version = '2.1';
+	public $version = '2.1.1';
 
 	/**
 	 * Is caching enabled?
