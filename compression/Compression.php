@@ -5,6 +5,7 @@
  * A basic class that loads CSS files, compresses them, and saves the resulting output into a cached file.
  * Also supports dynamic variables and functions within the CSS file.
  *
+ * @version		2.0
  * @author		Miles Johnson - http://milesj.me
  * @copyright	Copyright 2006-2011, Miles Johnson, Inc.
  * @license		http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
@@ -74,7 +75,6 @@ class Compression {
 	 *
 	 * @access public
 	 * @param string|array $stylesheets
-	 * @return void
 	 */
 	public function __construct($stylesheets = array()) {
 		if (!empty($stylesheets)) {
@@ -83,7 +83,7 @@ class Compression {
 			}
 
 			foreach ($stylesheets as $sheet) {
-				if (strtolower(substr(strrchr($sheet, '.'), 1)) != 'css') {
+				if (strtolower(substr(strrchr($sheet, '.'), 1)) !== 'css') {
 					$sheet = trim($sheet, '.') .'.css';
 				}
 
@@ -103,12 +103,12 @@ class Compression {
 	 * @access public
 	 * @param string|array $variable
 	 * @param string $value
-	 * @return this
+	 * @return Compression
 	 * @chainable
 	 */
 	public function bind($variable, $value = null) {
 		if (!$this->_parse) {
-			return;
+			return $this;
 		}
 
 		if (is_array($variable)) {
@@ -118,8 +118,8 @@ class Compression {
 		} else {
 			$variable = preg_replace('/[^-_a-zA-Z0-9]/i', '', $variable);
 
-			if (substr($variable, 0, 1) != '@') {
-				$variable = '@'. $variable;
+			if (substr($variable, 0, 1) !== '@') {
+				$variable = '@' . $variable;
 			}
 
 			$this->_variables[$variable] = trim(strip_tags($value));
@@ -136,7 +136,7 @@ class Compression {
 	 */
 	public function disableCache() {
 		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-		header("Last-Modified: ". gmdate("D, d M Y H:i:s") ." GMT");
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 		header("Cache-Control: no-store, no-cache, must-revalidate");
 		header("Cache-Control: post-check=0, pre-check=0", false);
 		header("Pragma: no-cache");
@@ -189,9 +189,9 @@ class Compression {
 			$response .= $output ."\n\n";
 		}
 
-		header("Date: ". date("D, j M Y G:i:s ", $cssModified) ." GMT");
+		header("Date: " . date("D, j M Y G:i:s ", $cssModified) . " GMT");
 		header("Content-Type: text/css");
-		header("Expires: ". gmdate("D, j M Y H:i:s", time() + 86400) ." GMT");
+		header("Expires: " . gmdate("D, j M Y H:i:s", time() + 86400) . " GMT");
 		header("Cache-Control: max-age=86400, must-revalidate"); // HTTP/1.1
 		header("Pragma: cache"); // HTTP/1.0
 
@@ -203,7 +203,7 @@ class Compression {
 	 *
 	 * @access public
 	 * @param boolean $enable
-	 * @return this
+	 * @return Compression
 	 * @chainable
 	 */
 	public function setCaching($enable = true) {
@@ -218,7 +218,7 @@ class Compression {
 	 * @access public
 	 * @param string $path
 	 * @param string $cachePath
-	 * @return this
+	 * @return Compression
 	 * @chainable
 	 */
 	public function setPath($path= null, $cachePath = '_cache') {
@@ -228,7 +228,7 @@ class Compression {
 
 		$path = trim(str_replace('\\', '/', $path), '/');
 
-		if (substr($path, -1) != '/') {
+		if (substr($path, -1) !== '/') {
 			$path .= '/';
 		}
 
@@ -298,6 +298,7 @@ class Compression {
 	 * @access protected
 	 * @param string $matches
 	 * @return string
+	 * @throws Exception
 	 */
 	protected function _functionize($matches) {
 		$function = str_replace('@', '', trim($matches[1]));
@@ -313,7 +314,7 @@ class Compression {
 			return call_user_func_array($function, $args);
 		}
 
-		trigger_error(sprintf('%s(): Custom function %s does not exist.', __METHOD__, $function), E_USER_WARNING);
+		throw new Exception(sprintf('Function %s does not exist.', $function));
 	}
 
 }

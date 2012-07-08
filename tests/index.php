@@ -28,7 +28,7 @@ include_once '../compression/Compression.php';
 $css = new Compression($stylesheet);
 
 // Set the location of the CSS files; trailing slash optional
-$css->setPath(dirname(__FILE__) .'/css');
+$css->setPath(dirname(__FILE__) .'/css/');
 
 // Turn caching off for testing purposes
 $css->setCaching(false);
