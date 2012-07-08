@@ -1,0 +1,23 @@
+{
+	"name": "mjohnson/compression",
+	"type": "library",
+	"description": "A stand alone CSS parser, minifier and cacher.",
+	"keywords": ["css", "minifier", "compression"],
+	"homepage": "http://milesj.me/code/php/compression",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Miles Johnson",
+			"homepage": "http://milesj.me"
+		}
+	],
+	"require": {
+		"php": ">=5.2"
+	},
+	"support": {
+		"source": "https://github.com/milesj/php-compression"
+	},
+	"autoload": {
+		"psr-0": { "Compression": "compression" }
+	}
+}
