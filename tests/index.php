@@ -1,16 +1,4 @@
 <?php
-/**
- * Compression
- *
- * A basic class that loads CSS files, compress them, and saves the resulting output into a cached file.
- * Also supports dynamic variables and functions within the CSS file.
- *
- * @author		Miles Johnson - http://milesj.me
- * @copyright	Copyright 2006-2011, Miles Johnson, Inc.
- * @license		http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
- * @link		http://milesj.me/code/php/compression
- */
-
 // Define our dynamic function
 // Can be used in the CSS file as @colWidth()
 function colWidth($size, $base = 100) {
