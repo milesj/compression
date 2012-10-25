@@ -1,4 +1,4 @@
-# Compression v2.1.1 #
+# Compression v2.1.2 #
 
 A basic class that loads CSS files, compresses them, and saves the resulting output into a cached file.
 
