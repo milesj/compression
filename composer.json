@@ -18,6 +18,6 @@
 		"source": "https://github.com/milesj/php-compression"
 	},
 	"autoload": {
-		"psr-0": { "Compression": "compression" }
+		"psr-0": { "mjohnson\Compression": "" }
 	}
 }
