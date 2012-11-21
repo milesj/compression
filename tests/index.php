@@ -1,4 +1,10 @@
 <?php
+/**
+ * @copyright	Copyright 2006-2012, Miles Johnson - http://milesj.me
+ * @license		http://opensource.org/licenses/mit-license.php - Licensed under the MIT License
+ * @link		http://milesj.me/code/php/compression
+ */
+
 // Define our dynamic function
 // Can be used in the CSS file as @colWidth()
 function colWidth($size, $base = 100) {
