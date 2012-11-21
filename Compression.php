@@ -13,7 +13,7 @@ use \Exception;
  * A basic class that loads CSS files, compresses them, and saves the resulting output into a cached file.
  * Also supports dynamic variables and functions within the CSS file.
  *
- * @version	2.1.2
+ * @version	3.0.0
  * @package	mjohnson.compression
  */
 class Compression {
