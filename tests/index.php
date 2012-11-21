@@ -10,13 +10,13 @@ function colWidth($size, $base = 100) {
 $stylesheet = isset($_GET['load']) ? $_GET['load'] : 'style.css';
 
 // Include class and instantiate
-include_once '../compression/Compression.php';
+include_once '../Compression.php';
 
 // Accepts a comma separated string, or an array
-$css = new Compression($stylesheet);
+$css = new \mjohnson\compression\Compression($stylesheet);
 
 // Set the location of the CSS files; trailing slash optional
-$css->setPath(dirname(__FILE__) .'/css/');
+$css->setPath(dirname(__FILE__) . '/css/');
 
 // Turn caching off for testing purposes
 $css->setCaching(false);

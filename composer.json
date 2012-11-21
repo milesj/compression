@@ -18,6 +18,7 @@
 		"source": "https://github.com/milesj/php-compression"
 	},
 	"autoload": {
-		"psr-0": { "mjohnson\\Compression": "" }
-	}
+		"psr-0": { "mjohnson\\compression": "" }
+	},
+	"target-dir": "mjohnson/compression"
 }

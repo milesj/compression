@@ -1,17 +1,21 @@
 <?php
 /**
- * Compression
- *
+ * @copyright	Copyright 2006-2012, Miles Johnson - http://milesj.me
+ * @license		http://opensource.org/licenses/mit-license.php - Licensed under the MIT License
+ * @link		http://milesj.me/code/cakephp/utility
+ */
+
+namespace mjohnson\compression;
+
+use \Exception;
+
+/**
  * A basic class that loads CSS files, compresses them, and saves the resulting output into a cached file.
  * Also supports dynamic variables and functions within the CSS file.
  *
- * @version		2.1.2
- * @author		Miles Johnson - http://milesj.me
- * @copyright	Copyright 2006-2011, Miles Johnson, Inc.
- * @license		http://opensource.org/licenses/mit-license.php - Licensed under The MIT License
- * @link		http://milesj.me/code/php/compression
+ * @version	2.1.2
+ * @package	mjohnson.compression
  */
-
 class Compression {
 
 	/**
@@ -69,7 +73,7 @@ class Compression {
 	 * @param string|array $stylesheets
 	 */
 	public function __construct($stylesheets = array()) {
-		if (!empty($stylesheets)) {
+		if ($stylesheets) {
 			if (is_string($stylesheets)) {
 				$stylesheets = explode(',', trim($stylesheets));
 			}
@@ -142,8 +146,9 @@ class Compression {
 	 */
 	public function parse() {
 		$response = "";
+		$cssModified = time();
 
-		if (!$this->_parse || empty($this->_css)) {
+		if (!$this->_parse || !$this->_css) {
 			return $response;
 		}
 
@@ -178,12 +183,12 @@ class Compression {
 				$this->_cache($css, $output);
 			}
 
-			$response .= $output ."\n\n";
+			$response .= $output . "\n\n";
 		}
 
-		header("Date: " . date("D, j M Y G:i:s ", $cssModified) . " GMT");
+		header("Date: " . date("D, d M Y H:i:s T", $cssModified) . " GMT");
 		header("Content-Type: text/css");
-		header("Expires: " . gmdate("D, j M Y H:i:s", time() + 86400) . " GMT");
+		header("Expires: " . gmdate("D, d M Y H:i:s T", time() + 86400) . " GMT");
 		header("Cache-Control: max-age=86400, must-revalidate"); // HTTP/1.1
 		header("Pragma: cache"); // HTTP/1.0
 
@@ -213,8 +218,8 @@ class Compression {
 	 * @return Compression
 	 * @chainable
 	 */
-	public function setPath($path= null, $cachePath = '_cache') {
-		if (empty($path)) {
+	public function setPath($path = null, $cachePath = '_cache') {
+		if (!$path) {
 			$path = dirname(__FILE__);
 		}
 
@@ -267,7 +272,7 @@ class Compression {
 		$stylesheet = preg_replace_callback('/(?:@([_\.a-zA-Z0-9]+)\((.*?)\))/i', array($this, '_functionize'), $stylesheet);
 
 		// Parse the variables
-		if (!empty($this->_variables)) {
+		if ($this->_variables) {
 			$stylesheet = str_replace(array_keys($this->_variables), $this->_variables, $stylesheet);
 		}
 
@@ -290,7 +295,7 @@ class Compression {
 	 * @access protected
 	 * @param string $matches
 	 * @return string
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	protected function _functionize($matches) {
 		$function = str_replace('@', '', trim($matches[1]));
@@ -302,6 +307,7 @@ class Compression {
 			if (method_exists($class, $method)) {
 				return call_user_func_array(array($class, $method), $args);
 			}
+
 		} else if (function_exists($function)) {
 			return call_user_func_array($function, $args);
 		}
