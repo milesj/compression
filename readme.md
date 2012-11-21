@@ -4,7 +4,8 @@ A basic class that loads CSS files, compresses them, and saves the resulting out
 
 ## Requirements ##
 
-* PHP 5.2.x, 5.3.x
+* PHP 5.3+ - v3.x
+* PHP 5.2+ - v2.x
 
 ## Features ##
 
