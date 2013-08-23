@@ -15,7 +15,7 @@
 		"php": ">=5.3"
 	},
 	"support": {
-		"source": "https://github.com/milesj/php-compression"
+		"source": "https://github.com/milesj/compression"
 	},
 	"autoload": {
 		"psr-0": { "mjohnson\\compression": "" }
